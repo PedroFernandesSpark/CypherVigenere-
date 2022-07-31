@@ -2,6 +2,7 @@ import itertools
 import string
 from time import sleep
 from itertools import islice
+import numpy as np
 
 ENGLISH_FREQUENCY_WORNG = (0.0749, 0.0129, 0.0354, 0.0362, 0.1400, 0.0218, 0.0174, 0.0422, 0.0665, 0.0027, 0.0047,
                 0.0357, 0.0339, 0.0674, 0.0737, 0.0243, 0.0026, 0.0614, 0.0695, 0.0985, 0.0300, 0.0116,
@@ -62,34 +63,36 @@ def test_vigenere(text, key, a_is_zero=True):
 
 def compare_frequency(text):
 
-    text = [t for t in text.lower()]
     freq = [0] * 26
-    total = float(len(text))
+    frequency_cyphertext = []
     for letter in text:
         freq[ord(letter) - ord('a')] +=1
-    return sum(abs(foo / total - E) for foo, E in zip(freq, ENGLISH_FREQUENCY))
+    for frequency in freq:
+        frequency_cyphertext.append((frequency/len(text)))
+    return frequency_cyphertext
 
+def check_closest_letter(freq_cypher):
+    closest_values = []
+    for frequency in ENGLISH_FREQUENCY:
+        closest_values.append(find_nearest(freq_cypher, frequency))
+    return closest_values
+
+def find_nearest(array, value):
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
+    return idx  
 
 def cracking_vigenere(text, password_min_size=None, password_max_size=None):
     best_passwords = []
     password_min_size = password_min_size or 1
     password_max_size = password_max_size or len(text) +1
 
-    text_letters = [t for t in text.lower()]
+    text_letters = list(text.lower())
 
-    for password_length in range(password_min_size, password_max_size):
-        password = [None] * password_length
-        for password_index in range(password_length):
-            #letters = "".join(islice(text_letters, password_index, password_length+password_index))
-            letters = "".join(text_letters[slice(0, password_index+1)])
-            rotator = []
-            for password_char in string.ascii_lowercase:
-                rotator.append(
-                    (compare_frequency(decoder_vigenere(letters, password_char, True)), password_char)
-                )
-            print(letters)
-            password[password_index] = min(rotator, key=lambda x: x[0])[1]
-        best_passwords.append("".join(password))
+    sequencia_cifrada = compare_frequency(text_letters)
+    melhor_apost = check_closest_letter(sequencia_cifrada)
+    print(melhor_apost)
+    best_passwords.append("".join(password))
     best_passwords.sort(key=lambda password: compare_frequency(decoder_vigenere(text,password, True)))
     return best_passwords[:2]
 
