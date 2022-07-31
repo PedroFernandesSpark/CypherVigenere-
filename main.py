@@ -61,14 +61,20 @@ def test_vigenere(text, key, a_is_zero=True):
     return "{!r} -> {!r} -> {!r}".format(text, ciphertext, plaintext, "" if a_is_zero else "!")
 
 def compare_frequency(text):
-
     text = [t for t in text.lower()]
     freq = [0] * 26
     total = float(len(text))
+    response = []
     for letter in text:
-        freq[ord(letter) - ord('a')] +=1
-    return sum(abs(foo / total - E) for foo, E in zip(freq, ENGLISH_FREQUENCY))
+        freq[ord(letter) - ord('a')] +=1/total
+    print(freq)
+    for i in range(3):
+        response.append(chr((freq.index(max(freq))+ord('a'))))
+        freq[freq.index(max(freq))] = 0
+    return response
 
+def get_key(coded_key):
+    return ord('a') + (ord(coded_key) - (ord('e')))
 
 def cracking_vigenere(text, password_min_size=None, password_max_size=None):
     best_passwords = []
@@ -77,21 +83,17 @@ def cracking_vigenere(text, password_min_size=None, password_max_size=None):
 
     text_letters = [t for t in text.lower()]
 
-    for password_length in range(password_min_size, password_max_size):
-        password = [None] * password_length
-        for password_index in range(password_length):
-            #letters = "".join(islice(text_letters, password_index, password_length+password_index))
-            letters = "".join(text_letters[slice(0, password_index+1)])
-            rotator = []
-            for password_char in string.ascii_lowercase:
-                rotator.append(
-                    (compare_frequency(decoder_vigenere(letters, password_char, True)), password_char)
-                )
-            print(letters)
-            password[password_index] = min(rotator, key=lambda x: x[0])[1]
-        best_passwords.append("".join(password))
-    best_passwords.sort(key=lambda password: compare_frequency(decoder_vigenere(text,password, True)))
-    return best_passwords[:2]
+    password = []
+    for password_index in range(5):
+        letters = "".join(islice(text_letters, password_index, len(text), 5))
+        # letters = "".join(text_letters[slice(0, password_index+1)])
+        rotator = []
+        for letter in compare_frequency(letters):
+            rotator.append(
+                (chr(get_key(letter)))
+            )
+        password.append(rotator)
+    return password
 
 
 message = input('Please enter your message: ')
@@ -102,12 +104,13 @@ cypherkey = input('Please input chyper key: ')
 print(test_vigenere(message, cypherkey, True))
 print(test_vigenere(message, cypherkey, False))
 new_message = cypher_vigenere(message, cypherkey, True)
-for password in reversed(cracking_vigenere(new_message)):
-    print("Found password: {!r}".format(password))
-    print("*" * 80) 
-    print('Solution: ')
-    print(decoder_vigenere(new_message, password))
-    print("*" * 80) 
+print(cracking_vigenere(new_message))
+# for password in reversed(cracking_vigenere(new_message)):
+#     print("Found password: {!r}".format(password))
+#     print("*" * 80) 
+#     print('Solution: ')
+#     print(decoder_vigenere(new_message, password))
+#     print("*" * 80) 
 
 sleep(500)
 
