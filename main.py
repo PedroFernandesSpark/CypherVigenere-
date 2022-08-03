@@ -15,8 +15,8 @@ def encoder(message, password):
     cip = []
     print('Working on the chyper...')
     for i, m in enumerate(message):
-        order = ord(password[i%len(password)]) - zero_value
-        new_char = zero_value + (ord(m) - zero_value + order) % 26
+        order = ord(password[i%len(password)]) - ord('a')
+        new_char = ord('a') + (ord(m) - ord('a') + order) % 26
         print('%s -> %s' % (m, chr(new_char)))
         cip.append(chr(new_char))
 
@@ -26,8 +26,8 @@ def decoder(new_message, password):
     dec = []
     print('Decoding message...')
     for i, m in enumerate(new_message):
-        order = ord(password[i%len(password)]) - zero_value
-        new_char = zero_value + (ord(m) - zero_value + (26 - order)) % 26
+        order = ord(password[i%len(password)]) - ord('a')
+        new_char = ord('a') + (ord(m) - ord('a') + (26 - order)) % 26
         print('%s -> %s' % (m, chr(new_char)))
         dec.append(chr(new_char))
 
